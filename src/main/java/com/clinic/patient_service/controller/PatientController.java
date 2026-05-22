@@ -2,6 +2,7 @@ package com.clinic.patient_service.controller;
 
 import com.clinic.patient_service.model.Patient;
 import com.clinic.patient_service.service.PatientService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +31,22 @@ public class PatientController {
     }
 
     @PostMapping
-    public ResponseEntity<Patient> createPatient(@RequestBody Patient patient) {
+    public ResponseEntity<Patient> createPatient(@Valid @RequestBody Patient patient) {
         Patient savedPatient = patientService.createPatient(patient);
         return new ResponseEntity<>(savedPatient, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updatePatient(
+            @PathVariable Long id,
+            @Valid @RequestBody Patient patientDetails) {
+
+        patientService.updatePatient(id, patientDetails);
+
+        // Return a clean, safe JSON structure instead of the managed Hibernate proxy object
+        return ResponseEntity.ok().body(java.util.Map.of(
+                "status", "Success",
+                "message", "Patient record updated successfully"
+        ));
     }
 }
