@@ -1,5 +1,6 @@
 package com.clinic.patient_service.service;
 
+import com.clinic.patient_service.exception.ResourceNotFoundException;
 import com.clinic.patient_service.model.Patient;
 import com.clinic.patient_service.repository.PatientRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,5 +70,35 @@ public class PatientServiceTest {
 
         // Verify that save was NEVER called because the validation blocked it
         verify(patientRepository, never()).save(any(Patient.class));
+    }
+
+    @Test
+    void deletePatient_WhenPatientExists_ShouldDeleteSuccessfully() {
+        // Arrange
+        Long patientId = 1L;
+        when(patientRepository.existsById(patientId)).thenReturn(true);
+        doNothing().when(patientRepository).deleteById(patientId);
+
+        // Act
+        patientService.deletePatient(patientId);
+
+        // Assert
+        verify(patientRepository, times(1)).existsById(patientId);
+        verify(patientRepository, times(1)).deleteById(patientId);
+    }
+
+    @Test
+    void deletePatient_WhenPatientDoesNotExist_ShouldThrowException() {
+        // Arrange
+        Long patientId = 1L;
+        when(patientRepository.existsById(patientId)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            patientService.deletePatient(patientId);
+        });
+
+        verify(patientRepository, times(1)).existsById(patientId);
+        verify(patientRepository, never()).deleteById(anyLong());
     }
 }

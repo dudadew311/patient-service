@@ -49,4 +49,10 @@ public class PatientController {
                 "message", "Patient record updated successfully"
         ));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
+        patientService.deletePatient(id);
+        return ResponseEntity.noContent().build();
+    }
 }

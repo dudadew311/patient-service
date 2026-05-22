@@ -59,4 +59,11 @@ public class PatientService {
         // 4. Save and return the updated entity (triggers @PreUpdate timestamp automatically)
         return patientRepository.save(existingPatient);
     }
+
+    public void deletePatient(Long id) {
+        if (!patientRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Patient not found with id: " + id);
+        }
+        patientRepository.deleteById(id);
+    }
 }
