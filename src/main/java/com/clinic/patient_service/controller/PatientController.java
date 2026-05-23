@@ -2,6 +2,9 @@ package com.clinic.patient_service.controller;
 
 import com.clinic.patient_service.model.Patient;
 import com.clinic.patient_service.service.PatientService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,12 @@ public class PatientController {
     }
 
     @PostMapping
+    @Operation(summary = "Register a new patient", description = "Creates a new patient record. Validation ensures the email is unique and fields are populated.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Patient successfully registered"),
+            @ApiResponse(responseCode = "400", description = "Validation failed or invalid payload structural format")
+    })
+
     public ResponseEntity<Patient> createPatient(@Valid @RequestBody Patient patient) {
         Patient savedPatient = patientService.createPatient(patient);
         return new ResponseEntity<>(savedPatient, HttpStatus.CREATED);
