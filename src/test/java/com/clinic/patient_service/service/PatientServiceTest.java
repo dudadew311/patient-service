@@ -29,71 +29,57 @@ public class PatientServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Initialize a clean patient object before each test run
         samplePatient = Patient.builder()
                 .id(1L)
                 .firstName("John")
                 .lastName("Doe")
                 .email("johndoe@example.com")
                 .dateOfBirth(LocalDate.of(1990, 5, 15))
+                .deleted(false)
                 .build();
     }
 
     @Test
     void createPatient_Success() {
-        // Arrange: Mock repository to say email does NOT exist, and return the saved patient
         when(patientRepository.existsByEmail(samplePatient.getEmail())).thenReturn(false);
         when(patientRepository.save(any(Patient.class))).thenReturn(samplePatient);
 
-        // Act: Execute the service method
         Patient savedPatient = patientService.createPatient(samplePatient);
 
-        // Assert: Verify the data matches expectations
         assertNotNull(savedPatient);
         assertEquals("johndoe@example.com", savedPatient.getEmail());
-
-        // Verify the repository save method was actually triggered exactly once
         verify(patientRepository, times(1)).save(any(Patient.class));
     }
 
     @Test
     void createPatient_ThrowsException_WhenEmailExists() {
-        // Arrange: Mock repository to simulate that the email is ALREADY taken
         when(patientRepository.existsByEmail(samplePatient.getEmail())).thenReturn(true);
 
-        // Act & Assert: Verify that the service throws an IllegalArgumentException
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             patientService.createPatient(samplePatient);
         });
 
         assertEquals("A patient with this email already exists.", exception.getMessage());
-
-        // Verify that save was NEVER called because the validation blocked it
         verify(patientRepository, never()).save(any(Patient.class));
     }
 
     @Test
     void deletePatient_WhenPatientExists_ShouldDeleteSuccessfully() {
-        // Arrange
         Long patientId = 1L;
         when(patientRepository.existsById(patientId)).thenReturn(true);
         doNothing().when(patientRepository).deleteById(patientId);
 
-        // Act
         patientService.deletePatient(patientId);
 
-        // Assert
         verify(patientRepository, times(1)).existsById(patientId);
         verify(patientRepository, times(1)).deleteById(patientId);
     }
 
     @Test
     void deletePatient_WhenPatientDoesNotExist_ShouldThrowException() {
-        // Arrange
         Long patientId = 1L;
         when(patientRepository.existsById(patientId)).thenReturn(false);
 
-        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> {
             patientService.deletePatient(patientId);
         });

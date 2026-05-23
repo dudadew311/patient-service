@@ -56,7 +56,7 @@ mvn clean spring-boot:run
 * **Method**: PUT
 * **URL**: http://localhost:8080/api/v1/patients/{id}
 * **Payload Format (JSON)**:
-```JSON
+```json
 {
   "firstName": "Tom",
   "lastName": "Doe",
@@ -68,7 +68,13 @@ mvn clean spring-boot:run
 ### 3. Delete a Patient
 * **Method:** `DELETE`
 * **URL:** `http://localhost:8080/api/v1/patients/{id}`
-* **Payload Format:** None (Returns a `204 No Content` status code on success)
+* **Payload Format:** None (Flags record as deleted via `is_deleted` column and returns a `204 No Content` status code on success)
+
+---
+
+### Database Schema Features
+* **Auditing:** Automatically captures record lifecycle states using `created_at` and `updated_at` timestamps.
+* **Soft Deletes:** Records are safely flagged via an `is_deleted` column to preserve historical data integrity instead of performing hard database removal.
 
 ---
 
