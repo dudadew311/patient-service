@@ -7,7 +7,7 @@ A Spring Boot REST API built to handle patient registration and clinical managem
 * **Language:** Java 17 (Amazon Corretto)
 * **Database:** PostgreSQL 15
 * **Migration Tool:** Flyway Migration Engine
-* **Containerization:** Docker Compose
+* **Containerization:** Docker Compose, Testcontainers
 * **Utilities:** Lombok, Jakarta Validation
 
 ---
@@ -80,4 +80,18 @@ The system implements a standardized structural schema for client-facing failure
     "message": "Validation Failed",
     "details": "email: Invalid email format"
 }
+```
+## Testing
+
+The project includes both unit and integration tests. The integration tests are completely self-contained and do not require a manually running database instance.
+
+* **Unit Tests:** Mock the service and repository layers using Mockito.
+* **Integration Tests:** Use **Testcontainers** to automatically spin up a disposable PostgreSQL Docker container during the test lifecycle.
+
+### Running the Tests
+
+To run the entire test suite, simply execute:
+
+```bash
+mvn verify
 ```
