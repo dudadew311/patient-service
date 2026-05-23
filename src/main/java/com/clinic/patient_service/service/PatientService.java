@@ -3,6 +3,8 @@ package com.clinic.patient_service.service;
 import com.clinic.patient_service.exception.ResourceNotFoundException;
 import com.clinic.patient_service.model.Patient;
 import com.clinic.patient_service.repository.PatientRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,5 +67,12 @@ public class PatientService {
             throw new ResourceNotFoundException("Patient not found with id: " + id);
         }
         patientRepository.deleteById(id);
+    }
+
+    public Page<Patient> getAllPatients(String lastName, Pageable pageable) {
+        if (lastName != null && !lastName.trim().isEmpty()) {
+            return patientRepository.findByLastNameContainingIgnoreCase(lastName.trim(), pageable);
+        }
+        return patientRepository.findAll(pageable);
     }
 }

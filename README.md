@@ -19,6 +19,9 @@ Before running this application, ensure you have the following installed:
 * **Docker Desktop**
 
 ---
+## Interactive API Documentation
+When the application is running locally, you can view and test the complete interactive REST API documentation via Swagger UI at:
+* **URL:** http://localhost:8080/swagger-ui/index.html
 
 ## Local Development Setup
 
@@ -53,7 +56,7 @@ mvn clean spring-boot:run
 }
 ```
 ### 2. Update Patient Details
-* **Method**: PUT
+* **Method**: `PUT`
 * **URL**: http://localhost:8080/api/v1/patients/{id}
 * **Payload Format (JSON)**:
 ```json
@@ -70,6 +73,44 @@ mvn clean spring-boot:run
 * **URL:** `http://localhost:8080/api/v1/patients/{id}`
 * **Payload Format:** None (Flags record as deleted via `is_deleted` column and returns a `204 No Content` status code on success)
 
+### 4. Get Paginated Patients
+* **Method:** `GET`
+* **URL:** `http://localhost:8080/api/v1/patients`
+* **Query Parameters (Optional):**
+    * `lastName` (String): Filter patients by a partial, case-insensitive match on their last name.
+    * `page` (Integer, default: `0`): The page index to retrieve.
+    * `size` (Integer, default: `10`): Number of records per page.
+    * `sort` (String, default: `id,asc`): Target sorting field and direction (e.g., `lastName,desc`).
+* **Response Format (JSON Paginated Wrapper):**
+```json
+{
+  "content": [
+    {
+      "id": 1,
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "johndoe@example.com",
+      "dateOfBirth": "1990-05-15",
+      "createdAt": "2026-05-23T14:58:27",
+      "updatedAt": "2026-05-23T15:02:11"
+    }
+  ],
+  "pageable": {
+    "pageNumber": 0,
+    "pageSize": 10,
+    "sort": {
+      "empty": false,
+      "sorted": true,
+      "unsorted": false
+    }
+  },
+  "totalElements": 1,
+  "totalPages": 1,
+  "last": true,
+  "size": 10,
+  "number": 0
+}
+```
 ---
 
 ### Database Schema Features

@@ -9,8 +9,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +42,34 @@ public class PatientServiceTest {
                 .dateOfBirth(LocalDate.of(1990, 5, 15))
                 .deleted(false)
                 .build();
+    }
+
+    @Test
+    void getAllPatients_ReturnsPaginatedPatients() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Patient> patientPage = new PageImpl<>(List.of(samplePatient));
+
+        when(patientRepository.findAll(pageable)).thenReturn(patientPage);
+
+        Page<Patient> result = patientService.getAllPatients(null, pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(patientRepository, times(1)).findAll(pageable);
+    }
+
+    @Test
+    void getAllPatients_WithLastNameFilter_ReturnsFilteredPatients() {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Patient> patientPage = new PageImpl<>(List.of(samplePatient));
+
+        when(patientRepository.findByLastNameContainingIgnoreCase("Doe", pageable)).thenReturn(patientPage);
+
+        Page<Patient> result = patientService.getAllPatients("Doe", pageable);
+
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(patientRepository, times(1)).findByLastNameContainingIgnoreCase("Doe", pageable);
     }
 
     @Test
