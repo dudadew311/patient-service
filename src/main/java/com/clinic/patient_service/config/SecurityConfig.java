@@ -27,8 +27,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                         // 2. Allow anyone to view paginated patient data
-                        .requestMatchers(HttpMethod.GET, "/api/v1/patients/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/v1/patients/**").hasAnyRole("USER", "ADMIN")
                         // 3. Restrict all modifications to ADMIN users
                         .requestMatchers(HttpMethod.POST, "/api/v1/patients/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/patients/**").hasRole("ADMIN")
