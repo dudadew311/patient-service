@@ -23,6 +23,20 @@ Before running this application, ensure you have the following installed:
 When the application is running locally, you can view and test the complete interactive REST API documentation via Swagger UI at:
 * **URL:** http://localhost:8080/swagger-ui/index.html
 
+## Security & Access Control
+The microservice is secured using HTTP Basic Authentication. Access to endpoints depends on the assigned user roles:
+
+* **Public Access (`.permitAll()`)**:
+  * Swagger UI / OpenAPI documentation.
+  * `GET /api/v1/patients` (Read-only access to patient lists).
+* **Admin Access (`hasRole('ADMIN')`)**:
+  * Required for all mutating actions (`POST`, `PUT`, `DELETE`).
+
+### Test Credentials (In-Memory)
+For testing purposes, two mock users are configured:
+* **Admin User**: Username: `admin` | Password: `admin123` (Full write privileges)
+* **Staff User**: Username: `staff` | Password: `staff123` (Read-only privileges)
+
 ## Local Development Setup
 
 ### 1. Start the Database Container

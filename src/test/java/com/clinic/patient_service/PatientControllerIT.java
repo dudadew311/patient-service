@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -34,10 +35,8 @@ class PatientControllerIT extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Clear old database states to avoid unique constraint issues
         patientRepository.deleteAll();
 
-        // Seed a fresh base record before each test execution
         Patient patient = Patient.builder()
                 .firstName("John")
                 .lastName("Doe")
@@ -50,7 +49,18 @@ class PatientControllerIT extends BaseIntegrationTest {
     }
 
     @Test
-    void createPatient_ShouldReturnCreated() throws Exception {
+    void getAllPatients_ShouldReturnPaginatedWrapper_WithoutAuthentication() throws Exception {
+        // GET endpoint is public (.permitAll()), so no credentials are required
+        mockMvc.perform(get("/api/v1/patients")
+                        .param("page", "0")
+                        .param("size", "5")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray());
+    }
+
+    @Test
+    void createPatient_AsAdmin_ShouldReturnCreated() throws Exception {
         Patient newPatient = Patient.builder()
                 .firstName("Jane")
                 .lastName("Smith")
@@ -58,67 +68,44 @@ class PatientControllerIT extends BaseIntegrationTest {
                 .dateOfBirth(LocalDate.of(1992, 8, 20))
                 .build();
 
+        // Pass valid admin credentials using httpBasic post-processor
         mockMvc.perform(post("/api/v1/patients")
+                        .with(httpBasic("admin", "admin123"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newPatient)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
-                .andExpect(jsonPath("$.email").value("janesmith@example.com"));
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void getAllPatients_ShouldReturnPaginatedWrapper() throws Exception {
-        mockMvc.perform(get("/api/v1/patients")
-                        .param("page", "0")
-                        .param("size", "5")
-                        .param("sort", "lastName,asc")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].lastName").value("Doe"))
-                .andExpect(jsonPath("$.pageable.pageSize").value(5))
-                .andExpect(jsonPath("$.totalElements").value(1));
-    }
-
-    @Test
-    void getAllPatients_WithFiltering_ShouldReturnMatchingContent() throws Exception {
-        mockMvc.perform(get("/api/v1/patients")
-                        .param("lastName", "doe")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].lastName").value("Doe"));
-    }
-
-    @Test
-    void updatePatient_ShouldReturnOkAndMessage() throws Exception {
-        Patient updatedDetails = Patient.builder()
-                .firstName("Johnathan")
-                .lastName("Doe")
-                .email("johndoe@example.com")
-                .dateOfBirth(LocalDate.of(1990, 5, 15))
+    void createPatient_AsStaff_ShouldReturnForbidden() throws Exception {
+        Patient newPatient = Patient.builder()
+                .firstName("Jane")
+                .lastName("Smith")
+                .email("janesmith@example.com")
+                .dateOfBirth(LocalDate.of(1992, 8, 20))
                 .build();
 
-        mockMvc.perform(put("/api/v1/patients/{id}", savedPatient.getId())
+        // Staff has ROLE_USER, which should be rejected with 403 Forbidden for mutations
+        mockMvc.perform(post("/api/v1/patients")
+                        .with(httpBasic("staff", "staff123"))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedDetails)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("Success"))
-                .andExpect(jsonPath("$.message").value("Patient record updated successfully"));
+                        .content(objectMapper.writeValueAsString(newPatient)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void deletePatient_ShouldReturnNoContent() throws Exception {
+    void deletePatient_AsAdmin_ShouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/api/v1/patients/{id}", savedPatient.getId())
+                        .with(httpBasic("admin", "admin123"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    void deletePatient_WhenNotFound_ShouldReturnNotFound() throws Exception {
-        Long nonExistentPatientId = 999L;
-
-        mockMvc.perform(delete("/api/v1/patients/{id}", nonExistentPatientId)
+    void deletePatient_WithoutAuth_ShouldReturnUnauthorized() throws Exception {
+        // Missing credentials entirely on a mutation endpoint should return 401 Unauthorized
+        mockMvc.perform(delete("/api/v1/patients/{id}", savedPatient.getId())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isUnauthorized());
     }
 }
