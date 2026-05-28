@@ -54,13 +54,11 @@ public class Patient {
     @Schema(description = "Patient's date of birth", example = "1990-05-15")
     private LocalDate dateOfBirth;
 
-    // Soft Delete Tracker
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default
     @Schema(description = "Soft-delete flag indicating active or archived status", example = "false", accessMode = Schema.AccessMode.READ_ONLY)
     private boolean deleted = Boolean.FALSE;
 
-    // Auditing Fields managed by Spring Data
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     @Schema(description = "Timestamp when the record was initially registered", example = "2026-05-23T14:58:27", accessMode = Schema.AccessMode.READ_ONLY)

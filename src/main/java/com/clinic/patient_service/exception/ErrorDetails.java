@@ -13,7 +13,6 @@ public class ErrorDetails {
         this.details = details;
     }
 
-    // Getters are required so Jackson can serialize this object into JSON
     public LocalDateTime getTimestamp() { return timestamp; }
     public String getMessage() { return message; }
     public String getDetails() { return details; }

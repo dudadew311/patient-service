@@ -36,7 +36,6 @@ public class SecurityConfig {
                         // Any other random request must be authenticated
                         .anyRequest().authenticated()
                 )
-                // Use standard basic credentials header entrypoints
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
@@ -44,7 +43,6 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        // Configure two mock users in-memory for immediate testing
         UserDetails staff = User.withDefaultPasswordEncoder()
                 .username("staff")
                 .password("staff123")

@@ -50,7 +50,6 @@ class PatientControllerIT extends BaseIntegrationTest {
 
     @Test
     void getAllPatients_ShouldReturnPaginatedWrapper_WithoutAuthentication() throws Exception {
-        // GET endpoint is public (.permitAll()), so no credentials are required
         mockMvc.perform(get("/api/v1/patients")
                         .param("page", "0")
                         .param("size", "5")
@@ -68,7 +67,6 @@ class PatientControllerIT extends BaseIntegrationTest {
                 .dateOfBirth(LocalDate.of(1992, 8, 20))
                 .build();
 
-        // Pass valid admin credentials using httpBasic post-processor
         mockMvc.perform(post("/api/v1/patients")
                         .with(httpBasic("admin", "admin123"))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +83,6 @@ class PatientControllerIT extends BaseIntegrationTest {
                 .dateOfBirth(LocalDate.of(1992, 8, 20))
                 .build();
 
-        // Staff has ROLE_USER, which should be rejected with 403 Forbidden for mutations
         mockMvc.perform(post("/api/v1/patients")
                         .with(httpBasic("staff", "staff123"))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -103,7 +100,6 @@ class PatientControllerIT extends BaseIntegrationTest {
 
     @Test
     void deletePatient_WithoutAuth_ShouldReturnUnauthorized() throws Exception {
-        // Missing credentials entirely on a mutation endpoint should return 401 Unauthorized
         mockMvc.perform(delete("/api/v1/patients/{id}", savedPatient.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
