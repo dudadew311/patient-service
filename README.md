@@ -71,7 +71,7 @@ mvn clean spring-boot:run
 ```
 ### 2. Update Patient Details
 * **Method**: `PUT`
-* **URL**: http://localhost:8080/api/v1/patients/{id}
+* **URL**: `http://localhost:8080/api/v1/patients/{id}`
 * **Payload Format (JSON)**:
 ```json
 {
